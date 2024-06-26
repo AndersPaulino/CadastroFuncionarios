@@ -1,9 +1,11 @@
 package br.com.example.cadastro.cadastro_app.controller;
 
 import br.com.example.cadastro.cadastro_app.dto.AuthenticationDTO;
+import br.com.example.cadastro.cadastro_app.dto.LoginResponseDTO;
 import br.com.example.cadastro.cadastro_app.dto.RegisterDTO;
 import br.com.example.cadastro.cadastro_app.entity.User;
 import br.com.example.cadastro.cadastro_app.repository.UserRepository;
+import br.com.example.cadastro.cadastro_app.security.TokenService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +26,16 @@ public class AuthenticationController {
    @Autowired
    private UserRepository userRepository;
 
+   @Autowired
+   TokenService tokenService;
    @PostMapping("/login")
    public ResponseEntity login(@RequestBody @Valid AuthenticationDTO data){
        var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
        var auth = this.authenticationManager.authenticate(usernamePassword);
 
-       return ResponseEntity.ok().build();
+       var token = tokenService.generateToken((User) auth.getPrincipal());
+
+       return ResponseEntity.ok(new LoginResponseDTO(token));
    }
 
    @PostMapping("/register")
